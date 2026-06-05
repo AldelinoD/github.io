@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aldelino Dornelles — Gestor de Tráfego Pago</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cyan: #00D4C8;
+    --cyan-dim: #00bfb4;
+    --dark: #0A0E14;
+    --dark2: #111720;
+    --dark3: #181f2c;
+    --card: #141b26;
+    --border: rgba(0,212,200,0.15);
+    --border2: rgba(255,255,255,0.06);
+    --text: #E8EDF5;
+    --muted: #7A8899;
+    --accent: #FF6B35;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+    overflow-x: hidden;
+  }
+
+  /* ---- NOISE TEXTURE OVERLAY ---- */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10,14,20,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--cyan); }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.875rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--cyan); }
+
+  /* ---- HERO ---- */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 8rem 2rem 4rem;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,200,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,200,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,200,0.08) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.8rem;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 .line1 { display: block; color: var(--text); }
+  .hero h1 .line2 { display: block; color: var(--cyan); }
+
+  .hero-desc {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  .hero-desc strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.875rem 2rem;
+    background: var(--cyan);
+    color: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:hover {
+    background: var(--cyan-dim);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.875rem 2rem;
+    background: transparent;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: 0.95rem;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  /* ---- STATS STRIP ---- */
+  .stats-strip {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border2);
+    border-bottom: 1px solid var(--border2);
+    background: var(--dark2);
+    padding: 2rem;
+  }
+
+  .stats-grid {
+    max-width: 860px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 2rem;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--cyan);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ---- SECTIONS ---- */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 5rem 2rem;
+  }
+
+  .section-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    font-size: 0.75rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-tag::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--cyan);
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .section-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 540px;
+    margin-bottom: 3rem;
+    font-weight: 300;
+  }
+
+  /* ---- ABOUT ---- */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  @media (max-width: 640px) {
+    .about-grid { grid-template-columns: 1fr; }
+    nav { padding: 1rem; }
+    .nav-links { display: none; }
+  }
+
+  .about-text p {
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 1rem;
+    line-height: 1.8;
+  }
+
+  .about-text p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .about-visual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .about-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+
+  .about-card:hover { border-color: var(--border); }
+
+  .about-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(0,212,200,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+  }
+
+  .about-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .about-card p {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* ---- SERVICES ---- */
+  #servicos { background: var(--dark2); }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .service-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .service-card:hover {
+    border-color: var(--border);
+    transform: translateY(-4px);
+  }
+
+  .service-card:hover::before { opacity: 1; }
+
+  .service-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: rgba(0,212,200,0.1);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+
+  .service-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+
+  .service-card p {
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ---- PLATFORMS ---- */
+  .platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .platform-pill {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 1.25rem 1rem;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .platform-pill:hover {
+    border-color: var(--border);
+    background: rgba(0,212,200,0.05);
+  }
+
+  .platform-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .platform-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    display: block;
+    margin-bottom: 0.2rem;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .platform-tag {
+    font-size: 0.72rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ---- PROCESS ---- */
+  #processo { background: var(--dark2); }
+
+  .process-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .process-item {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 2rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border2);
+    align-items: start;
+  }
+
+  .process-item:last-child { border-bottom: none; }
+
+  .process-step {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: rgba(0,212,200,0.18);
+    line-height: 1;
+    text-align: right;
+    padding-top: 0.2rem;
+  }
+
+  .process-body h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+  }
+
+  .process-body p {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ---- SKILLS ---- */
+  .skills-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+
+  @media (max-width: 640px) {
+    .skills-split { grid-template-columns: 1fr; }
+    .about-grid { grid-template-columns: 1fr; }
+  }
+
+  .skill-group h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .skill-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .skill-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .skill-list li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--cyan);
+    flex-shrink: 0;
+  }
+
+  /* ---- CERTIFICATIONS ---- */
+  .cert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .cert-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: border-color 0.2s;
+  }
+
+  .cert-card:hover { border-color: var(--border); }
+
+  .cert-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(0,212,200,0.1);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .cert-info h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    color: var(--text);
+  }
+
+  .cert-info p {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* ---- CONTACT ---- */
+  #contato { background: var(--dark2); }
+
+  .contact-box {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .contact-box::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,200,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .contact-box h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .contact-box p {
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 2rem;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .contact-links {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: 0.9rem;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .contact-link:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .contact-link svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border2);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  footer span { color: var(--cyan); }
+
+  /* ---- ANIMATIONS ---- */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-badge { animation: fadeUp 0.5s ease both; }
+  .hero h1 { animation: fadeUp 0.6s 0.1s ease both; }
+  .hero-desc { animation: fadeUp 0.6s 0.2s ease both; }
+  .hero-cta { animation: fadeUp 0.6s 0.3s ease both; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">A<span>.</span>Dornelles</a>
+  <ul class="nav-links">
+    <li><a href="#sobre">Sobre</a></li>
+    <li><a href="#servicos">Serviços</a></li>
+    <li><a href="#plataformas">Plataformas</a></li>
+    <li><a href="#processo">Processo</a></li>
+    <li><a href="#contato">Contato</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Disponível para novos projetos</div>
+    <h1>
+      <span class="line1">Gestor de</span>
+      <span class="line2">Tráfego Pago</span>
+    </h1>
+    <p class="hero-desc">
+      Transformo <strong>orçamento em resultado</strong> — campanhas orientadas a dados que geram leads qualificados, reduzem o CPL e escalam negócios de verdade.
+    </p>
+    <div class="hero-cta">
+      <a href="#contato" class="btn-primary">Falar comigo →</a>
+      <a href="#servicos" class="btn-secondary">Ver serviços</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-num">4+</div>
+      <div class="stat-label">Plataformas de Ads</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Certificações</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">2024</div>
+      <div class="stat-label">Atuando desde</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">↓CPL</div>
+      <div class="stat-label">Foco em redução de custo</div>
+    </div>
+  </div>
+</div>
+
+<!-- SOBRE -->
+<section id="sobre">
+  <div class="section-inner">
+    <div class="section-tag">Sobre mim</div>
+    <div class="about-grid">
+      <div class="about-text">
+        <h2 class="section-title">Dados que<br>viram crescimento</h2>
+        <p>Sou <strong>Aldelino Dornelles</strong>, Gestor de Tráfego Pago focado em performance real. Trabalho com criação, gestão e otimização de campanhas nas principais plataformas do mercado.</p>
+        <p>Minha abordagem é <strong>100% orientada a dados</strong>: analiso métricas, testo criativos, refino públicos e ajusto continuamente para que cada real investido entregue o máximo de retorno.</p>
+        <p>Atendo negócios locais, serviços e e-commerces — do zero à escala.</p>
+      </div>
+      <div class="about-visual">
+        <div class="about-card">
+          <div class="about-card-icon">📊</div>
+          <h4>Performance</h4>
+          <p>Campanhas orientadas a KPIs reais</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">🎯</div>
+          <h4>Segmentação</h4>
+          <p>Público certo, na hora certa</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">✍️</div>
+          <h4>Copywriting</h4>
+          <p>Criativos que convertem</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">📈</div>
+          <h4>Escalagem</h4>
+          <p>Estrutura para crescer com controle</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVIÇOS -->
+<section id="servicos">
+  <div class="section-inner">
+    <div class="section-tag">O que eu faço</div>
+    <h2 class="section-title">Serviços</h2>
+    <p class="section-sub">Tudo que seu negócio precisa para gerar leads e conversões de forma previsível.</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-num">01</div>
+        <h3>Gestão de Campanhas</h3>
+        <p>Criação e gerenciamento completo de campanhas no Meta Ads, Google Ads, TikTok Ads e Pinterest Ads com foco em resultado.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">02</div>
+        <h3>Geração de Leads</h3>
+        <p>Estruturação de funis de captação com foco em leads qualificados, reduzindo o custo por lead (CPL) continuamente.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">03</div>
+        <h3>Pixel & Rastreamento</h3>
+        <p>Implementação de Pixel, eventos de conversão e integrações para rastreamento preciso de cada ação no site.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">04</div>
+        <h3>Copywriting para Anúncios</h3>
+        <p>Criação e validação de copies persuasivos e criativos otimizados para cada etapa do funil de vendas.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">05</div>
+        <h3>Análise & Relatórios</h3>
+        <p>Dashboards e relatórios estratégicos com os dados que realmente importam para tomada de decisão.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">06</div>
+        <h3>Social Media Ads</h3>
+        <p>Integração entre tráfego pago e conteúdo orgânico para maximizar alcance e relevância da marca.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATAFORMAS -->
+<section id="plataformas">
+  <div class="section-inner">
+    <div class="section-tag">Ferramentas</div>
+    <h2 class="section-title">Plataformas</h2>
+    <p class="section-sub">Domínio das principais plataformas de mídia paga e análise do mercado.</p>
+    <div class="platforms-grid">
+      <div class="platform-pill">
+        <span class="platform-icon">⬛</span>
+        <span class="platform-name">Meta Ads</span>
+        <span class="platform-tag">Facebook · Instagram</span>
+      </div>
+      <div class="platform-pill">
+        <span class="platform-icon">🔵</span>
+        <span class="platform-name">Google Ads</span>
+        <span class="platform-tag">Search · Display · YouTube</span>
+      </div>
+      <div class="platform-pill">
+        <span class="platform-icon">⬛</span>
+        <span class="platform-name">TikTok Ads</span>
+        <span class="platform-tag">In-Feed · Spark</span>
+      </div>
+      <div class="platform-pill">
+        <span class="platform-icon">🔴</span>
+        <span class="platform-name">Pinterest Ads</span>
+        <span class="platform-tag">Promoted Pins</span>
+      </div>
+      <div class="platform-pill">
+        <span class="platform-icon">📊</span>
+        <span class="platform-name">Google Analytics 4</span>
+        <span class="platform-tag">Web Analytics</span>
+      </div>
+      <div class="platform-pill">
+        <span class="platform-icon">⚙️</span>
+        <span class="platform-name">Pixel & Eventos</span>
+        <span class="platform-tag">Tracking & Conversões</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESSO -->
+<section id="processo">
+  <div class="section-inner">
+    <div class="section-tag">Como trabalho</div>
+    <h2 class="section-title">Processo</h2>
+    <p class="section-sub">Método claro e estruturado para campanhas que entregam resultados consistentes.</p>
+    <div class="process-list">
+      <div class="process-item">
+        <div class="process-step">01</div>
+        <div class="process-body">
+          <h3>Diagnóstico e estratégia</h3>
+          <p>Análise profunda do negócio, público-alvo, concorrência e histórico de campanhas para definir a estratégia mais eficiente.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-step">02</div>
+        <div class="process-body">
+          <h3>Estrutura e configuração</h3>
+          <p>Implementação de pixels, configuração de eventos de conversão, criação de audiências e estruturação das campanhas nas plataformas.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-step">03</div>
+        <div class="process-body">
+          <h3>Criação de criativos e copies</h3>
+          <p>Desenvolvimento de anúncios com copywriting persuasivo e criativos validados para cada etapa do funil de vendas.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-step">04</div>
+        <div class="process-body">
+          <h3>Lançamento e testes</h3>
+          <p>Ativação das campanhas com testes A/B estruturados para identificar rapidamente o que funciona melhor.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <div class="process-step">05</div>
+        <div class="process-body">
+          <h3>Otimização contínua e relatórios</h3>
+          <p>Análise diária de métricas, ajustes de lance, segmentação e criativos — com relatórios claros e transparentes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HABILIDADES & CERTIFICAÇÕES -->
+<section id="habilidades">
+  <div class="section-inner">
+    <div class="section-tag">Competências</div>
+    <h2 class="section-title">Habilidades & Certificações</h2>
+    <p class="section-sub">Conhecimento técnico certificado aliado à prática no mercado real.</p>
+    <div class="skills-split" style="margin-bottom: 3rem;">
+      <div class="skill-group">
+        <h3>Habilidades técnicas</h3>
+        <ul class="skill-list">
+          <li>Gestão de campanhas de tráfego pago</li>
+          <li>Geração de leads e conversões</li>
+          <li>Copywriting para anúncios</li>
+          <li>Estruturação de funis de vendas</li>
+          <li>Segmentação e análise de público</li>
+          <li>Otimização baseada em dados</li>
+          <li>Criação de dashboards e relatórios</li>
+        </ul>
+      </div>
+      <div class="skill-group">
+        <h3>Social Media</h3>
+        <ul class="skill-list">
+          <li>Planejamento de conteúdo estratégico</li>
+          <li>Criação de copies para redes sociais</li>
+          <li>Gestão e otimização de perfis</li>
+          <li>Integração entre orgânico e tráfego pago</li>
+          <li>Análise de métricas de engajamento</li>
+          <li>Estratégia de posicionamento de marca</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cert-grid">
+      <div class="cert-card">
+        <div class="cert-badge">🏆</div>
+        <div class="cert-info">
+          <h4>Curso Subido de Tráfego Pago</h4>
+          <p>Pedro Sobral · Certificado</p>
+        </div>
+      </div>
+      <div class="cert-card">
+        <div class="cert-badge">⬛</div>
+        <div class="cert-info">
+          <h4>Certificação Meta Ads</h4>
+          <p>Pedro Sobral · Meta Ads</p>
+        </div>
+      </div>
+      <div class="cert-card">
+        <div class="cert-badge">🔵</div>
+        <div class="cert-info">
+          <h4>Certificação Google Ads</h4>
+          <p>Pedro Sobral · Google Ads</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTATO -->
+<section id="contato">
+  <div class="section-inner">
+    <div class="contact-box">
+      <h2>Pronto para escalar<br>suas campanhas?</h2>
+      <p>Vamos conversar sobre como posso ajudar seu negócio a gerar mais leads qualificados e reduzir o custo por aquisição.</p>
+      <div class="contact-links">
+        <a href="https://wa.me/5544991736134" class="btn-primary" target="_blank">
+          WhatsApp →
+        </a>
+        <a href="mailto:aldelinod@gmail.com" class="contact-link">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          aldelinod@gmail.com
+        </a>
+        <a href="tel:+5544991736134" class="contact-link">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          (44) 99173-6134
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 <span>Aldelino Dornelles</span> · Gestor de Tráfego Pago · Guaíra, Paraná — Brasil</p>
+</footer>
+
+</body>
+</html>
